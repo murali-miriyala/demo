@@ -1,0 +1,221 @@
+
+Create table Student
+(
+RollNo int, 
+Name varchar(40), 
+Course varchar(30), 
+Address varchar(100)
+);
+
+ConnectionFactory.java
+=================
+public class ConnectionFactory {
+
+
+}
+
+
+StudentBean.java
+==============
+
+
+import java.io.Serializable;
+
+public class StudentBean implements Serializable {
+	int rollNo;
+	String name;
+	String course;
+	String address;
+
+	public StudentBean() {
+
+	}
+
+	public StudentBean(int roll, String name, String course, String address) {
+		this.rollNo = roll;
+		this.name = name;
+		this.course = course;
+		this.address = address;
+	}
+
+	public int getRollNo() {
+		return rollNo;
+	}
+
+	public void setRollNo(int rollNo) {
+		this.rollNo = rollNo;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getCourse() {
+		return course;
+	}
+
+	public void setCourse(String course) {
+		this.course = course;
+	}
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+}
+
+
+StudentJDBCDAO   -> interface
+	public void add(StudentBean studentBean);
+	public void update(StudentBean studentBean) 
+	public void findAll();
+	public void delete(int rollNo);
+
+
+StudentJDBCDAOIMPL.java
+===============
+
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class StudentJDBCDAOIMPL implements StudentJDBCDAO{
+	Connection connection = null;
+	PreparedStatement ptmt = null;
+	ResultSet resultSet = null;
+
+	public StudentJDBCDAOIMPL() {
+
+	}
+
+	private Connection getConnection() throws SQLException {
+		Connection conn;
+		conn = ConnectionFactory.getConnection();
+		return conn;
+	}
+
+	public void add(StudentBean studentBean) {
+		try {
+			String queryString = "INSERT INTO student(RollNo, Name, Course, Address) VALUES(?,?,?,?)";
+			connection = getConnection();
+			ptmt = connection.prepareStatement(queryString);
+			ptmt.setInt(1, studentBean.getRollNo());
+			ptmt.setString(2, studentBean.getName());
+			ptmt.setString(3, studentBean.getCourse());
+			ptmt.setString(4, studentBean.getAddress());
+			ptmt.executeUpdate();
+			System.out.println("Data Added Successfully");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			
+					ptmt.close();
+				
+					connection.close();
+			
+				
+			}
+
+
+	}
+
+	public void update(StudentBean studentBean) {
+
+		try {
+			String queryString = "UPDATE student SET Name=? WHERE RollNo=?";
+			connection = getConnection();
+			ptmt = connection.prepareStatement(queryString);
+			ptmt.setString(1, studentBean.getName());
+			ptmt.setInt(2, studentBean.getRollNo());
+			ptmt.executeUpdate();
+			System.out.println("Table Updated Successfully");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+					ptmt.close();
+					connection.close();
+			}
+
+	}
+
+	public void delete(int rollNo) {
+
+		try {
+			String queryString = "DELETE FROM student WHERE RollNo=?";
+			connection = getConnection();
+			ptmt = connection.prepareStatement(queryString);
+			ptmt.setInt(1, rollNo);
+			ptmt.executeUpdate();
+			System.out.println("Data deleted Successfully");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+					ptmt.close();
+					connection.close();
+
+		}
+
+	}
+
+	public void findAll() {
+		try {
+			String queryString = "SELECT * FROM student";
+			connection = getConnection();
+			ptmt = connection.prepareStatement(queryString);
+			resultSet = ptmt.executeQuery();
+			while (resultSet.next()) {
+				System.out.println("Roll No " + resultSet.getInt("RollNo")
+						+ ", Name " + resultSet.getString("Name") + ", Course "
+						+ resultSet.getString("Course") + ", Address "
+						+ resultSet.getString("Address"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+
+					resultSet.close();
+					ptmt.close();
+					connection.close();
+			}
+
+	}
+}
+
+
+
+MainClaz.java
+
+
+
+public class MainClaz {
+	public static void main(String[] args) {
+		StudentJDBCDAO student = new StudentJDBCDAO();
+		StudentBean   studentBean1 = new StudentBean();
+		  studentBean1.setName("Robert");
+		  studentBean1.setRollNo(100);
+		  studentBean1.setCourse("MBA");
+		  studentBean1.setAddress("Hyderabad");
+		StudentBean   studentBean2 = new StudentBean();
+		  studentBean2.setName("Arvind");
+		  studentBean2.setRollNo(6);
+		// Adding Data
+		student.add(  studentBean1);
+		// Deleting Data
+		student.delete(7);
+		// Updating Data
+		student.update(  studentBean2);
+		// Displaying Data
+		student.findAll();
+	}
+}
+
